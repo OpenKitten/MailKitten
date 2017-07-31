@@ -1,49 +1,32 @@
 import Foundation
 
-struct SMTPExtensions {}
-
-extension SMTPExtensions {
-    struct EHLO {
-        let keyword: [UInt8]
-        let params: [Array<UInt8>]
-        
-        init(_ reply: Reply) throws {
-            guard reply.lines.count > 1 else {
-                throw SMTPError.invalidEHLOMessage
+struct Greeting {
+    let extensions: [Array<UInt8>]
+    
+    var auth: [String] {
+        for var ehloExtension in extensions where ehloExtension.starts(with: [UInt8]("AUTH".utf8)) {
+            guard ehloExtension.count > 5 else {
+                return []
             }
             
-            let arguments = reply.lines[1].split(separator: 0x20)
+            ehloExtension.removeFirst(5)
             
-            guard let keyword = arguments.first, !keyword.isEmpty else {
-                throw SMTPError.invalidEHLOMessage
+            // split by " "
+            return ehloExtension.split(separator: 0x20).flatMap { buffer in
+                String(bytes: buffer, encoding: .utf8)
             }
-            
-            self.keyword = Array(keyword)
-            self.params = arguments.dropFirst().map(Array.init)
         }
-    }
-}
-
-extension Reply {
-    struct Greeting {
-        let domain: String
-        let message: String
         
-        init?(_ reply: Reply) throws {
-            guard reply.lines.count > 1 else {
-                throw SMTPError.noGreeting
+        return []
+    }
+    
+    init(_ replies: Replies) {
+        self.extensions = replies.replies.flatMap { reply in
+            guard reply.line.count > 1 else {
+                return nil
             }
             
-            let lines = reply.lines[1].split(separator: 0x20)
-            
-            guard lines.count == 2,
-                let domain = String(bytes: lines[0], encoding: .utf8),
-                let message = String(bytes: lines[1], encoding: .utf8) else {
-                    throw SMTPError.noGreeting
-            }
-            
-            self.domain = domain
-            self.message = message
+            return Array(reply.line.dropFirst())
         }
     }
 }
