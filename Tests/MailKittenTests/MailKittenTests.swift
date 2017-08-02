@@ -3,7 +3,7 @@ import XCTest
 
 class MailKittenTests: XCTestCase {
     func testExample() throws {
-        let client = try SMTPClient(to: "smtp.transip.email", ssl: true)
+//        let client = try SMTPClient(to: "smtp.transip.email", ssl: true)
     }
 
 
