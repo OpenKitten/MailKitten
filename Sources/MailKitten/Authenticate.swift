@@ -16,6 +16,8 @@ extension SMTPClient {
             guard replies.replies.count == 1, replies.replies.first?.code == 235 else {
                 throw SMTPError.invalidCredentials
             }
+            
+            return
         }
         
         throw SMTPError.unsupportedMechanisms(mechanisms)

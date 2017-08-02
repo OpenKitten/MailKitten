@@ -1,4 +1,11 @@
+import Lynx
 import Schrodinger
+
+#if os(Linux)
+    import Glibc
+#else
+    import Darwin
+#endif
 
 extension SMTPClient {
     func send(_ command: String) throws -> Future<Replies> {
@@ -6,24 +13,37 @@ extension SMTPClient {
     }
     
     func send(_ command: [UInt8]) throws -> Future<Replies> {
-        try self.client.send(data: command + [0x20, 0x0d, 0x0a])
-        
         let future = Future<Replies>()
-        
         self.replyFuture = future
+        
+        try self.client.send(data: command + [0x20, 0x0d, 0x0a])
         
         return future
     }
 }
 
 enum SMTPError : Error {
-    case invalidReply, multipleSimultaniousCommands, noGreeting, invalidEHLOMessage, unsupportedMechanisms([String]), invalidCredentials
+    case invalidReply, multipleSimultaniousCommands, noGreeting, invalidEHLOMessage, unsupportedMechanisms([String]), invalidCredentials, error(Int)
 }
 
 struct Replies {
     struct Reply {
         let code: Int
         let line: [UInt8]
+        
+        func assert(code: Int) throws {
+            guard self.code == code else {
+                throw SMTPError.error(code)
+            }
+        }
+    }
+    
+    func assertSingleReply() throws -> Reply {
+        guard let reply = replies.first, replies.count == 1 else {
+            throw SMTPError.invalidReply
+        }
+        
+        return reply
     }
     
     var replies = [Reply]()
