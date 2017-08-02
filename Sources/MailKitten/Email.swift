@@ -35,7 +35,7 @@ fileprivate let formatter: DateFormatter = {
 }()
 
 extension SMTPClient {
-    public func send(_ email: Email, from sender: String, encoding: Encoding = .binary) throws -> Future<Void> {
+    public func send(_ email: Email, from sender: String) throws -> Future<Void> {
         var future = try send("MAIL FROM:<\(sender)>")
         
         for recipient in email.recipients {
@@ -100,10 +100,10 @@ extension SMTPClient {
             
             try writeBoundary()
             try writeString("Content-Type: \(email.type.rawValue); charset=\"utf-8\"\r\n")
-            try writeString("Content-Transfer-Encoding: \(encoding.rawValue)\r\n\r\n")
+            try writeString("Content-Transfer-Encoding: \(Encoding.binary.rawValue)\r\n\r\n")
             
             try email.contents.write { buffer in
-                try encoding.write(buffer: buffer, to: self.client!)
+                try Encoding.binary.write(buffer: buffer, to: self.client!)
             }
             
             try write([0x0d, 0x0a])
@@ -112,10 +112,10 @@ extension SMTPClient {
                 try writeBoundary()
                 try writeString("Content-Disposition: attachment; filename=\(attachment.name)\r\n")
                 try writeString("Content-Type: \(attachment.mimeType); name=\(attachment.name)\r\n")
-                try writeString("Content-Transfer-Encoding: \(encoding.rawValue)\r\n\r\n")
+                try writeString("Content-Transfer-Encoding: \(Encoding.base64.rawValue)\r\n\r\n")
                 
                 try attachment.write { buffer in
-                    try encoding.write(buffer: buffer, to: self.client!)
+                    try Encoding.base64.write(buffer: buffer, to: self.client!)
                 }
                 
                 try write([0x0d, 0x0a])
