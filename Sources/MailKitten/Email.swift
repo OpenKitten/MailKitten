@@ -66,7 +66,6 @@ extension SMTPClient {
                 headers[key] = value
             }
             
-//            let boundary = "openkitten-boundary-" + UUID().uuidString
             let boundary = "sdsadajdfnqewrnwdajsifnqweriw"
             
             headers["Content-type"] = "multipart/mixed; boundary=\"\(boundary)\""

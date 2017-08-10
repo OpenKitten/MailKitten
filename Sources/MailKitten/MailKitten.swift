@@ -9,8 +9,6 @@ public final class SMTPClient {
     
     public init(to hostname: String, at port: UInt16? = nil, currentHost: String = "localhost", ssl: Bool = false) throws {
         func onRead(pointer: UnsafePointer<UInt8>, count: Int) {
-            print(String(bytes: UnsafeBufferPointer(start: pointer, count: count), encoding: .utf8)!)
-            
             _ = try? replyFuture.complete {
                 return try Replies(from: pointer, count: count)
             }
