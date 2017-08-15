@@ -2,8 +2,8 @@ import Foundation
 import Schrodinger
 import Lynx
 
-public struct Email {
-    public enum ContentType : String {
+public struct Email : Codable {
+    public enum ContentType : String, Codable {
         case plain = "text/plain"
         case html = "text/html"
     }
@@ -35,6 +35,7 @@ fileprivate let formatter: DateFormatter = {
 }()
 
 extension SMTPClient {
+    @discardableResult
     public func send(_ email: Email, from sender: String) throws -> Future<Void> {
         var future = try send("MAIL FROM:<\(sender)>")
         
